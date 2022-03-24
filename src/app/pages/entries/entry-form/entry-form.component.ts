@@ -5,9 +5,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Entry } from '../shared/entry.model';
 import { EntryService } from '../shared/entry.service';
 
+import { Category } from "../../categories/shared/category.model";
+import { CategoryService } from "../../categories/shared/category.service";
+
 import { switchMap } from 'rxjs/operators';
 
 import toastr from "toastr";
+import { ThrowStmt } from '@angular/compiler';
 
 @Component({
   selector: 'app-entry-form',
@@ -22,19 +26,44 @@ export class EntryFormComponent implements OnInit, AfterContentChecked {
   serverErrorMessages: string[] = null
   submittingForm: boolean = false
   entry: Entry = new Entry()
+  categories: Array<Category>
+
+  imaskConfig = {
+    mask: Number,
+    scale: 2,
+    thousandsSeparador: '',
+    padFractionalZeros: true,
+    normalizeZeros: true,
+    radix: ','
+  }
+
+  ptBR = {
+    firstDayOfWeek: 0,
+    dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+    dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
+    dayNamesMin: ['Do', 'Se', 'Te', 'Qu', 'Qu', 'Se', 'Sa'],
+    monthNames: [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho',
+      'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ],
+    monthNamesShot: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+    today: 'Hoje',
+    clear: 'Limpar'
+  }
 
   constructor(
     private entryService: EntryService,
     private route: ActivatedRoute,
     private router: Router,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private categoryService: CategoryService
   ) { }
 
   ngOnInit() {
     this.setCurrentAction()
     this.buildEntryform()
     this.loadEntry()
-
+    this.loadCategories()
   }
 
   ngAfterContentChecked() {
@@ -48,6 +77,17 @@ export class EntryFormComponent implements OnInit, AfterContentChecked {
       this.createEntry()
     else // currentAction == "edit"
       this.updateEntry()
+  }
+
+  get typeOptions(): Array<any> {
+    return Object.entries(Entry.types).map(
+      ([value, text]) => {
+        return {
+          text: text,
+          value: value
+        }
+      }
+    )
   }
 
   // PRIVATE METHODS
@@ -84,6 +124,12 @@ export class EntryFormComponent implements OnInit, AfterContentChecked {
           (error) => alert('Ocorreu um erro no servidor, tente mais tarde.')
         )
     }
+  }
+
+  private loadCategories() {
+    this.categoryService.getAll().subscribe(
+      categories => this.categories = categories
+    );
   }
 
   private setPageTitle() {
