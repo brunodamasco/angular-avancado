@@ -1,5 +1,5 @@
 import { BaseResourceModel } from "../../../shared/models/base-resource.model";
-import { Category } from './../../categories/shared/category.model';
+import { Category } from "../../categories/shared/category.model";
 
 export class Entry extends BaseResourceModel {
   constructor(
@@ -16,13 +16,17 @@ export class Entry extends BaseResourceModel {
     super();
   }
 
+
   static types = {
     expense: 'Despesa',
-    revenue: 'Receira'
+    revenue: 'Receita'
   };
 
-  get paidText(): string {
-    return this.paid ? 'Pago' : 'Pendente';
+  static fromJson(jsonData: any): Entry {
+    return Object.assign(new Entry(), jsonData);
+  }
 
+  get paidText(): string {
+    return this.paid ? 'Pago' : 'Pedente';
   }
 }
